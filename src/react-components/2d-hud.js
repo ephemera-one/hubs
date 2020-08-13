@@ -276,7 +276,7 @@ class TopHUD extends Component {
         ) : (
           <div className={cx(uiStyles.uiInteractive, styles.panel)}>
             {tip}
-            {videoSharingButtons}
+            {/* {videoSharingButtons} */}
             <div
               className={cx(styles.iconButton)}
               title={this.props.muted ? "Unmute Mic" : "Mute Mic"}
@@ -284,7 +284,7 @@ class TopHUD extends Component {
             >
               <InlineSVG className={cx(styles.iconButtonIcon)} src={micIcon} />
             </div>
-            <div
+            {/* <div
               className={cx(styles.iconButton, {
                 [styles.disabled]: this.state.mediaDisabled
               })}
@@ -294,8 +294,8 @@ class TopHUD extends Component {
               }
             >
               <InlineSVG className={cx(styles.iconButtonIcon, styles.spawn)} src={SpawnIcon} />
-            </div>
-            <div
+            </div> */}
+            {/* <div
               className={cx(styles.iconButton, {
                 [styles.disabled]: this.state.penDisabled
               })}
@@ -306,7 +306,7 @@ class TopHUD extends Component {
                 className={cx(styles.iconButtonIcon)}
                 src={this.props.isCursorHoldingPen ? PenIconActive : PenIcon}
               />
-            </div>
+            </div> */}
             <div
               className={cx(styles.iconButton, {
                 [styles.disabled]: this.state.cameraDisabled

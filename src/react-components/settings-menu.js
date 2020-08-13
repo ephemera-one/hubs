@@ -120,7 +120,7 @@ export default class SettingsMenu extends Component {
                 </StateLink>
               </div>
             </div>
-            <div className={rowClasses}>
+            {/* <div className={rowClasses}>
               <div className={styles.icon}>
                 <i>
                   <FontAwesomeIcon icon={faStar} />
@@ -143,7 +143,7 @@ export default class SettingsMenu extends Component {
                   <FormattedMessage id="settings.favorites" />
                 </div>
               </div>
-            </div>
+            </div> */}
             <div className={rowClasses}>
               <div className={styles.icon}>
                 <i>
@@ -250,7 +250,7 @@ export default class SettingsMenu extends Component {
                 </div>
               </div>
             )}
-            {showRoomInfo && (
+            {/* {showRoomInfo && (
               <div className={rowClasses}>
                 <div className={styles.icon}>
                   <i>
@@ -268,8 +268,8 @@ export default class SettingsMenu extends Component {
                   </StateLink>
                 </div>
               </div>
-            )}
-            {!hideExtranousItems && (
+            )} */}
+            {/* {!hideExtranousItems && (
               <div className={rowClasses}>
                 <div className={styles.icon}>
                   <i>
@@ -292,7 +292,7 @@ export default class SettingsMenu extends Component {
                   </a>
                 </div>
               </div>
-            )}
+            )} */}
             {showStreamerMode && !hideExtranousItems ? (
               <div className={rowHeader}>
                 <FormattedMessage id="settings.row-tools" />
@@ -331,7 +331,7 @@ export default class SettingsMenu extends Component {
                 </div>
               </div>
             )}
-            {!hideExtranousItems && (
+            {/* {!hideExtranousItems && (
               <div className={classNames([styles.bottomLinksMain])}>
                 <IfFeature name="show_whats_new_link">
                   <a href="/whats-new" target="_blank" rel="noreferrer noopener">
@@ -357,8 +357,8 @@ export default class SettingsMenu extends Component {
                   </a>
                 </IfFeature>
               </div>
-            )}
-            {!hideExtranousItems && (
+            )} */}
+            {/* {!hideExtranousItems && (
               <div className={classNames([styles.bottomLinks])}>
                 <IfFeature name="show_docs_link">
                   <a
@@ -419,7 +419,7 @@ export default class SettingsMenu extends Component {
                   </a>
                 </IfFeature>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

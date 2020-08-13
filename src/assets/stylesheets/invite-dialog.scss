@@ -58,6 +58,7 @@
 
 :local(.invite-container-inverted) {
   :local(.invite-button) {
+
     @extend %action-button-selected;
   }
 }
@@ -77,6 +78,7 @@
   :local(.invite-button) {
     @extend %action-button;
     pointer-events: auto;
+    display: none;
   }
 
   :local(.invite-button-lowered) {

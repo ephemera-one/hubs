@@ -158,7 +158,7 @@ export default class ObjectList extends Component {
     const numObjects = (this.state.mediaEntities && this.state.mediaEntities.length) || 0;
     return (
       <div>
-        <button
+        {/* <button
           title="Media"
           aria-label={`Toggle list of ${numObjects} object${numObjects === 1 ? "" : "s"}`}
           onClick={() => {
@@ -171,7 +171,7 @@ export default class ObjectList extends Component {
         >
           <FontAwesomeIcon icon={faCubes} />
           <span className={rootStyles.mediaCount}>{this.state.mediaEntities.length}</span>
-        </button>
+        </button> */}
         {this.props.expanded && this.renderExpandedList()}
       </div>
     );
