@@ -237,7 +237,7 @@ class TopHUD extends Component {
             </i>
           </button>
         )}
-        {!this.props.frozen && <div className={cx([styles.attachPoint, styles[`attach_${type.split(".")[1]}`]])} />}
+        {/* {!this.props.frozen && <div className={cx([styles.attachPoint, styles[`attach_${type.split(".")[1]}`]])} />} */}
         <FormattedMessage id={`tips.${type}`} />
       </div>
     );

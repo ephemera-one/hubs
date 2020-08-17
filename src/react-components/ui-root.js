@@ -1914,7 +1914,7 @@ class UIRoot extends Component {
                   [inviteStyles.inviteContainerInverted]: this.state.showShareDialog
                 })}
               >
-                {!embed &&
+                {/* {!embed &&
                   !streaming && (
                     <button
                       className={classNames({
@@ -1926,7 +1926,7 @@ class UIRoot extends Component {
                     >
                       <FormattedMessage id="entry.share-button" />
                     </button>
-                  )}
+                  )} */}
                 {showChooseSceneButton && (
                   <button
                     className={classNames([styles.chooseSceneButton])}
@@ -1945,12 +1945,12 @@ class UIRoot extends Component {
                   </button>
                 )}
 
-                {showInviteTip && (
+                {/* {showInviteTip && (
                   <div className={styles.inviteTip}>
                     <div className={styles.inviteTipAttachPoint} />
                     <FormattedMessage id={`entry.${isMobile ? "mobile" : "desktop"}.invite-tip`} />
                   </div>
-                )}
+                )} */}
                 {!embed &&
                   this.occupantCount() > 1 &&
                   !hasTopTip &&

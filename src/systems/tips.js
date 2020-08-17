@@ -30,7 +30,7 @@ const TIPS = {
       "look",
       "locomotion",
       "turning",
-      "spawn_menu",
+      // "spawn_menu",
       "object_grab",
       "object_zoom",
       "object_scale",
@@ -39,7 +39,7 @@ const TIPS = {
       "object_rotate_button",
       "object_scale_button",
       "object_pin",
-      "invite",
+      // "invite",
       "pen_color",
       "pen_size",
       "feedback"
@@ -50,13 +50,13 @@ const TIPS = {
     bottom: [
       "look",
       "locomotion",
-      "spawn_menu",
+      // "spawn_menu",
       "object_grab",
       "freeze_gesture",
       "object_rotate_button",
       "object_scale_button",
       "object_pin",
-      "invite",
+      // "invite",
       "feedback"
     ]
   },

@@ -78,7 +78,6 @@
   :local(.invite-button) {
     @extend %action-button;
     pointer-events: auto;
-    display: none;
   }
 
   :local(.invite-button-lowered) {
