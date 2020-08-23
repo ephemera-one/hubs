@@ -201,7 +201,7 @@ export default class Store extends EventTarget {
       creatorAssignmentTokens: [],
       embedTokens: [],
       onLoadActions: [],
-      preferences: {}
+      preferences: { muteMicOnEntry: true }
     });
 
     this._shouldResetAvatarOnInit = false;
