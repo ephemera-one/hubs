@@ -1,13 +1,12 @@
 import nextTick from "../utils/next-tick";
-import { mapMaterials } from "../utils/material-utils";
+import { mapMaterials, convertStandardMaterial } from "../utils/material-utils";
 import SketchfabZipWorker from "../workers/sketchfab-zip.worker.js";
-import MobileStandardMaterial from "../materials/MobileStandardMaterial";
 import { getCustomGLTFParserURLResolver } from "../utils/media-url-utils";
 import { promisifyWorker } from "../utils/promisify-worker.js";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { disposeNode, cloneObject3D } from "../utils/three-utils";
 import HubsTextureLoader from "../loaders/HubsTextureLoader";
-import HubsBasisTextureLoader from "../loaders/HubsBasisTextureLoader";
+import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
@@ -85,10 +84,20 @@ function generateMeshBVH(object3D) {
     const hasBoundsTree = hasBufferGeometry && obj.geometry.boundsTree;
     if (hasBufferGeometry && !hasBoundsTree && obj.geometry.attributes.position) {
       const geo = obj.geometry;
+
+      if (
+        geo.attributes.position.isInterleavedBufferAttribute ||
+        (geo.index && geo.index.isInterleavedBufferAttribute)
+      ) {
+        console.warn("Skipping generaton of MeshBVH for interleaved geoemtry as it is not supported");
+        return;
+      }
+
       const triCount = geo.index ? geo.index.count / 3 : geo.attributes.position.count / 3;
       // only bother using memory and time making a BVH if there are a reasonable number of tris,
       // and if there are too many it's too painful and large to tolerate doing it (at least until
       // we put this in a web worker)
+
       if (triCount > 1000 && triCount < 1000000) {
         // note that bounds tree construction creates an index as a side effect if one doesn't already exist
         geo.boundsTree = new MeshBVH(obj.geometry, { strategy: 0, maxDepth: 30 });
@@ -114,6 +123,16 @@ function getHubsComponents(node) {
   const legacyComponents = node.userData.components;
 
   return hubsComponents || legacyComponents;
+}
+
+function getHubsComponentsFromMaterial(node) {
+  const material = node.material;
+
+  if (!material) {
+    return null;
+  }
+
+  return getHubsComponents(material);
 }
 
 /// Walks the tree of three.js objects starting at the given node, using the GLTF data
@@ -143,8 +162,9 @@ const inflateEntities = function(indexToEntityMap, node, templates, isRoot, mode
   }
 
   const entityComponents = getHubsComponents(node);
+  const materialComponents = getHubsComponentsFromMaterial(node);
 
-  const nodeHasBehavior = !!entityComponents || node.name in templates;
+  const nodeHasBehavior = !!entityComponents || !!materialComponents || node.name in templates;
   if (!nodeHasBehavior && !childEntities.length && !isRoot) {
     return null; // we don't need an entity for this node
   }
@@ -230,6 +250,17 @@ async function inflateComponents(inflatedEntity, indexToEntityMap) {
         if (entityComponents.hasOwnProperty(prop) && AFRAME.GLTFModelPlus.components.hasOwnProperty(prop)) {
           const { componentName, inflator } = AFRAME.GLTFModelPlus.components[prop];
           await inflator(el, componentName, entityComponents[prop], entityComponents, indexToEntityMap);
+        }
+      }
+    }
+
+    const materialComponents = getHubsComponentsFromMaterial(object3D);
+
+    if (materialComponents && el) {
+      for (const prop in materialComponents) {
+        if (materialComponents.hasOwnProperty(prop) && AFRAME.GLTFModelPlus.components.hasOwnProperty(prop)) {
+          const { componentName, inflator } = AFRAME.GLTFModelPlus.components[prop];
+          await inflator(el, componentName, materialComponents[prop], materialComponents, indexToEntityMap);
         }
       }
     }
@@ -321,7 +352,9 @@ const loadLightmap = async (parser, materialIndex) => {
   return lightMap;
 };
 
-export async function loadGLTF(src, contentType, preferredTechnique, onProgress, jsonPreprocessor) {
+let ktxLoader;
+
+export async function loadGLTF(src, contentType, onProgress, jsonPreprocessor) {
   let gltfUrl = src;
   let fileMap;
 
@@ -333,7 +366,17 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
   const loadingManager = new THREE.LoadingManager();
   loadingManager.setURLModifier(getCustomGLTFParserURLResolver(gltfUrl));
   const gltfLoader = new THREE.GLTFLoader(loadingManager);
-  gltfLoader.setBasisTextureLoader(new HubsBasisTextureLoader(loadingManager));
+
+  // TODO some models are loaded before the renderer exists. This is likely things like the camera tool and loading cube.
+  // They don't currently use KTX textures but if they did this would be an issue. Fixing this is hard but is part of
+  // "taking control of the render loop" which is something we want to tackle for many reasons.
+  if (!ktxLoader && AFRAME && AFRAME.scenes && AFRAME.scenes[0]) {
+    ktxLoader = new KTX2Loader(loadingManager).detectSupport(AFRAME.scenes[0].renderer);
+  }
+
+  if (ktxLoader) {
+    gltfLoader.setKTX2Loader(ktxLoader);
+  }
 
   const parser = await new Promise((resolve, reject) => gltfLoader.createParser(gltfUrl, resolve, onProgress, reject));
 
@@ -377,19 +420,14 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
 
       if (!materialNode.extensions) continue;
 
-      if (
-        materialNode.extensions.MOZ_alt_materials &&
-        materialNode.extensions.MOZ_alt_materials[preferredTechnique] !== undefined
-      ) {
-        const altMaterialIndex = materialNode.extensions.MOZ_alt_materials[preferredTechnique];
-        materials[i] = materials[altMaterialIndex];
-      } else if (materialNode.extensions.MOZ_lightmap) {
+      if (materialNode.extensions.MOZ_lightmap) {
         extensionDeps.push(loadLightmap(parser, i));
       }
     }
   }
 
   // Note this is being done in place of parser.parse() which we now no longer call. This gives us more control over the order of execution.
+  // TODO all of the weird stuff we are doing here and above would be much better implemented as "plugins" for the latst GLTFLoader
   const [scenes, animations, cameras] = await Promise.all([
     parser.getDependencies("scene"),
     parser.getDependencies("animation"),
@@ -412,14 +450,8 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
   gltf.scene.traverse(object => {
     // GLTFLoader sets matrixAutoUpdate on animated objects, we want to keep the defaults
     object.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
-
-    object.material = mapMaterials(object, material => {
-      if (material.isMeshStandardMaterial && preferredTechnique === "KHR_materials_unlit") {
-        return MobileStandardMaterial.fromStandardMaterial(material);
-      }
-
-      return material;
-    });
+    const materialQuality = window.APP.store.materialQualitySetting;
+    object.material = mapMaterials(object, material => convertStandardMaterial(material, materialQuality));
   });
 
   if (fileMap) {
@@ -433,9 +465,6 @@ export async function loadGLTF(src, contentType, preferredTechnique, onProgress,
 }
 
 export async function loadModel(src, contentType = null, useCache = false, jsonPreprocessor = null) {
-  const preferredTechnique =
-    window.APP && window.APP.quality === "low" ? "KHR_materials_unlit" : "pbrMetallicRoughness";
-
   if (useCache) {
     if (gltfCache.has(src)) {
       gltfCache.retain(src);
@@ -446,7 +475,7 @@ export async function loadModel(src, contentType = null, useCache = false, jsonP
         gltfCache.retain(src);
         return cloneGltf(gltf);
       } else {
-        const promise = loadGLTF(src, contentType, preferredTechnique, null, jsonPreprocessor);
+        const promise = loadGLTF(src, contentType, null, jsonPreprocessor);
         inflightGltfs.set(src, promise);
         const gltf = await promise;
         inflightGltfs.delete(src);
@@ -455,7 +484,7 @@ export async function loadModel(src, contentType = null, useCache = false, jsonP
       }
     }
   } else {
-    return loadGLTF(src, contentType, preferredTechnique, null, jsonPreprocessor);
+    return loadGLTF(src, contentType, null, jsonPreprocessor);
   }
 }
 
@@ -611,7 +640,7 @@ AFRAME.registerComponent("gltf-model-plus", {
       rewires.forEach(f => f());
 
       object3DToSet.visible = true;
-      this.el.emit("model-loaded", { format: "gltf", model: this.model });
+      this.el.emit("model-loaded", { format: "gltf", model: object3DToSet });
     } catch (e) {
       gltfCache.release(src);
       console.error("Failed to load glTF model", e, this);

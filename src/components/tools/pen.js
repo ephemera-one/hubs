@@ -7,7 +7,7 @@ import {
   SOUND_PEN_CHANGE_COLOR
 } from "../../systems/sound-effects-system";
 import { waitForDOMContentLoaded } from "../../utils/async-utils";
-import MobileStandardMaterial from "../../materials/MobileStandardMaterial";
+import { convertStandardMaterial } from "../../utils/material-utils";
 
 const pathsMap = {
   "player-right-controller": {
@@ -131,9 +131,9 @@ AFRAME.registerComponent("pen", {
     this.dirty = true;
 
     let material = new THREE.MeshStandardMaterial();
-    if (window.APP && window.APP.quality === "low") {
-      material = MobileStandardMaterial.fromStandardMaterial(material);
-    }
+    const quality = window.APP.store.materialQualitySetting;
+    material = convertStandardMaterial(material, quality);
+
     this.penTip = new THREE.Mesh(new THREE.SphereBufferGeometry(1, 16, 12), material);
     this.penTip.scale.setScalar(this.data.radius / this.el.parentEl.object3D.scale.x);
     this.penTip.matrixNeedsUpdate = true;
@@ -164,6 +164,9 @@ AFRAME.registerComponent("pen", {
       scene.addEventListener("object3dset", this.setDirty);
       scene.addEventListener("object3dremove", this.setDirty);
     });
+
+    this.penSystem = this.el.sceneEl.systems["pen-tools"];
+    this.penSystem.register(this.el);
   },
 
   play() {
@@ -498,5 +501,6 @@ AFRAME.registerComponent("pen", {
     this.observer.disconnect();
     AFRAME.scenes[0].removeEventListener("object3dset", this.setDirty);
     AFRAME.scenes[0].removeEventListener("object3dremove", this.setDirty);
+    this.penSystem.deregister(this.el);
   }
 });

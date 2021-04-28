@@ -1,13 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { IntlProvider } from "react-intl";
+import { WrappedIntlProvider } from "./react-components/wrapped-intl-provider";
 import registerTelemetry from "./telemetry";
 import Store from "./storage/store";
 import "./utils/theme";
-import { lang, messages } from "./utils/i18n";
 import { AuthContextProvider } from "./react-components/auth/AuthContext";
-import { VerifyPage } from "./react-components/auth/VerifyPage";
+import { VerifyModalContainer } from "./react-components/auth/VerifyModalContainer";
+import "./react-components/styles/global.scss";
 import "./assets/stylesheets/globals.scss";
+import { PageContainer } from "./react-components/layout/PageContainer";
+import { Center } from "./react-components/layout/Center";
+import { ThemeProvider } from "./react-components/styles/theme";
 
 registerTelemetry("/verify", "Hubs Verify Email Page");
 
@@ -16,11 +19,17 @@ window.APP = { store };
 
 function Root() {
   return (
-    <IntlProvider locale={lang} messages={messages}>
-      <AuthContextProvider store={store}>
-        <VerifyPage />
-      </AuthContextProvider>
-    </IntlProvider>
+    <WrappedIntlProvider>
+      <ThemeProvider store={store}>
+        <AuthContextProvider store={store}>
+          <PageContainer>
+            <Center>
+              <VerifyModalContainer />
+            </Center>
+          </PageContainer>
+        </AuthContextProvider>
+      </ThemeProvider>
+    </WrappedIntlProvider>
   );
 }
 

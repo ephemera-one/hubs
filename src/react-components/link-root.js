@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { IntlProvider, FormattedMessage, addLocaleData } from "react-intl";
-import en from "react-intl/locale-data/en";
-
+import { FormattedMessage } from "react-intl";
+import { WrappedIntlProvider } from "./wrapped-intl-provider";
 import configs from "../utils/configs";
-import { lang, messages } from "../utils/i18n";
 import classNames from "classnames";
 import styles from "../assets/stylesheets/link.scss";
 import { disableiOSZoom } from "../utils/disable-ios-zoom";
@@ -13,9 +11,18 @@ import HeadsetIcon from "../assets/images/generic_vr_headset.svg";
 const MAX_DIGITS = 6;
 const MAX_LETTERS = 4;
 
-addLocaleData([...en]);
 disableiOSZoom();
 const hasTouchEvents = "ontouchstart" in document.documentElement;
+
+function ToggleModeButton(props) {
+  return (
+    <span>
+      <a href="#" {...props}>
+        <FormattedMessage id="link-page.toggle-mode-button" defaultMessage="Have a letter code?" />
+      </a>
+    </span>
+  );
+}
 
 class LinkRoot extends Component {
   static propTypes = {
@@ -159,11 +166,14 @@ class LinkRoot extends Component {
     // Note we use type "tel" for the input due to https://bugzilla.mozilla.org/show_bug.cgi?id=1005603
 
     return (
-      <IntlProvider locale={lang} messages={messages}>
+      <WrappedIntlProvider>
         <div className={styles.link}>
           <div className={styles.linkContents}>
             <a className={styles.logo} href="/">
-              <img src={configs.image("logo")} />
+              <img
+                src={configs.image("logo")}
+                alt={<FormattedMessage id="link-page.logo-alt" defaultMessage="Logo" />}
+              />
             </a>
             {this.state.entered.length === this.maxAllowedChars() && (
               <div className={classNames("loading-panel", styles.codeLoadingPanel)}>
@@ -177,13 +187,15 @@ class LinkRoot extends Component {
 
             <div className={styles.enteredContents}>
               <div className={styles.header}>
-                <FormattedMessage
-                  id={
-                    this.state.failedAtLeastOnce
-                      ? "link.try_again"
-                      : "link.link_page_header_" + (!this.state.isAlphaMode ? "entry" : "headset")
-                  }
-                />
+                {this.state.failedAtLeastOnce ? (
+                  <FormattedMessage
+                    id="link-page.try-again"
+                    defaultMessage="We couldn't find that code.{linebreak}Please try again."
+                    values={{ linebreak: <br /> }}
+                  />
+                ) : (
+                  <FormattedMessage id="link-page.enter-code" defaultMessage="Enter code:" />
+                )}
               </div>
 
               <div className={styles.entered}>
@@ -207,13 +219,7 @@ class LinkRoot extends Component {
               </div>
 
               <div className={styles.enteredFooter}>
-                {!this.state.isAlphaMode && (
-                  <span>
-                    <a href="#" onClick={() => this.toggleMode()}>
-                      <FormattedMessage id="link.linking_a_headset" />
-                    </a>
-                  </span>
-                )}
+                {!this.state.isAlphaMode && <ToggleModeButton onClick={() => this.toggleMode()} />}
               </div>
             </div>
 
@@ -274,22 +280,18 @@ class LinkRoot extends Component {
                   style={{ visibility: this.state.isAlphaMode ? "hidden" : "visible" }}
                 >
                   <img onClick={() => this.toggleMode()} src={HeadsetIcon} className={styles.headsetIcon} />
-                  <span>
-                    <a href="#" onClick={() => this.toggleMode()}>
-                      <FormattedMessage id="link.linking_a_headset" />
-                    </a>
-                  </span>
+                  <ToggleModeButton onClick={() => this.toggleMode()} />
                 </div>
               )}
             </div>
             <div className={styles.createLink}>
               <a href="/">
-                <FormattedMessage id="link.create_a_room" />
+                <FormattedMessage id="link-page.create-room-button" defaultMessage="Create a new room" />
               </a>
             </div>
           </div>
         </div>
-      </IntlProvider>
+      </WrappedIntlProvider>
     );
   }
 }

@@ -11,7 +11,8 @@ AFRAME.registerComponent("open-media-button", {
 
     this.updateSrc = async () => {
       if (!this.targetEl.parentNode) return; // If removed
-      const src = (this.src = this.targetEl.components["media-loader"].data.src);
+      const mediaLoader = this.targetEl.components["media-loader"].data;
+      const src = (this.src = (mediaLoader.mediaOptions && mediaLoader.mediaOptions.href) || mediaLoader.src);
       const visible = src && guessContentType(src) !== "video/vnd.hubs-webrtc";
       const mayChangeScene = this.el.sceneEl.systems.permissions.canOrWillIfCreator("update_hub");
 
@@ -25,7 +26,12 @@ AFRAME.registerComponent("open-media-button", {
           } else if ((await isLocalHubsSceneUrl(src)) && mayChangeScene) {
             label = "use scene";
           } else if (await isHubsRoomUrl(src)) {
-            label = "visit room";
+            const url = new URL(this.src);
+            if (url.hash && window.location.pathname === url.pathname) {
+              label = "go to";
+            } else {
+              label = "visit room";
+            }
           }
         }
         this.label.setAttribute("text", "value", label);
