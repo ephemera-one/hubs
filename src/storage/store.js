@@ -235,7 +235,7 @@ export default class Store extends EventTarget {
       creatorAssignmentTokens: [],
       embedTokens: [],
       onLoadActions: [],
-      preferences: { muteMicOnEntry: true }
+      preferences: { muteMicOnEntry: true, disableSoundEffects: true, onlyShowNametagsInFreeze: true, locale: "en" }
     });
 
     this._shouldResetAvatarOnInit = false;
