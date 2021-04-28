@@ -1341,7 +1341,7 @@ class UIRoot extends Component {
                     {(!this.props.selectedObject ||
                       (this.props.breakpoint !== "sm" && this.props.breakpoint !== "md")) && (
                       <ContentMenu>
-                        {showObjectList && (
+                        {/* {showObjectList && (
                           <ObjectsMenuButton
                             active={this.state.sidebarId === "objects"}
                             onClick={() => this.toggleSidebar("objects")}
@@ -1350,7 +1350,7 @@ class UIRoot extends Component {
                         <PeopleMenuButton
                           active={this.state.sidebarId === "people"}
                           onClick={() => this.toggleSidebar("people")}
-                        />
+                        /> */}
                       </ContentMenu>
                     )}
                     {!entered && !streaming && !isMobile && streamerName && <SpectatingLabel name={streamerName} />}
@@ -1493,13 +1493,7 @@ class UIRoot extends Component {
                   )
                 }
                 modal={this.state.dialog}
-                toolbarLeft={
-                  <InvitePopoverContainer
-                    hub={this.props.hub}
-                    hubChannel={this.props.hubChannel}
-                    scene={this.props.scene}
-                  />
-                }
+                toolbarLeft={<ChatToolbarButtonContainer onClick={() => this.toggleSidebar("chat")} />}
                 toolbarCenter={
                   <>
                     {watching && (
@@ -1528,17 +1522,9 @@ class UIRoot extends Component {
                           scene={this.props.scene}
                           microphoneEnabled={this.mediaDevicesManager.isMicShared}
                         />
-                        <SharePopoverContainer scene={this.props.scene} hubChannel={this.props.hubChannel} />
-                        <PlacePopoverContainer
-                          scene={this.props.scene}
-                          hubChannel={this.props.hubChannel}
-                          mediaSearchStore={this.props.mediaSearchStore}
-                          showNonHistoriedDialog={this.showNonHistoriedDialog}
-                        />
-                        {this.props.hubChannel.can("spawn_emoji") && <ReactionPopoverContainer />}
                       </>
                     )}
-                    <ChatToolbarButtonContainer onClick={() => this.toggleSidebar("chat")} />
+
                     {entered &&
                       isMobileVR && (
                         <ToolbarButton
