@@ -1354,7 +1354,7 @@ class UIRoot extends Component {
                       </ContentMenu>
                     )}
                     {!entered && !streaming && !isMobile && streamerName && <SpectatingLabel name={streamerName} />}
-                    {this.props.activeObject && (
+                    {/* {this.props.activeObject && (
                       <ObjectMenuContainer
                         hubChannel={this.props.hubChannel}
                         scene={this.props.scene}
@@ -1365,7 +1365,7 @@ class UIRoot extends Component {
                           }
                         }}
                       />
-                    )}
+                    )} */}
                     {this.state.sidebarId !== "chat" &&
                       this.props.hub && (
                         <PresenceLog
